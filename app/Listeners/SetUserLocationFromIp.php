@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\Models\User;
 use App\Services\IpLocationService;
 use Illuminate\Auth\Events\Login;
 
@@ -13,9 +14,12 @@ class SetUserLocationFromIp
 
     public function handle(Login $event): void
     {
+        if (! $event->user instanceof User) {
+            return;
+        }
+
         $user = $event->user;
 
-        // Kalau user sudah pernah isi alamat sendiri, jangan ditimpa otomatis.
         if (! empty($user->address)) {
             return;
         }

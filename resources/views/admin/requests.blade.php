@@ -70,8 +70,14 @@
                                     </select>
                                 </form>
                             </td>
-                            <td class="p-4 text-right">
-                                <a href="{{ route('admin.schedule') }}" class="text-xs font-semibold text-soft hover:text-[var(--ink)]">Atur jadwal →</a>
+                            <td class="p-4 text-right whitespace-nowrap">
+                                <a href="{{ route('admin.schedule') }}" class="text-xs font-semibold text-soft hover:text-[var(--ink)] mr-4">Atur jadwal →</a>
+                                <form method="POST" action="{{ route('admin.requests.destroy', $order) }}" class="inline"
+                                      onsubmit="return confirm('Hapus pesanan #SRY-{{ 2000 + $order->id }} ini? Tindakan ini tidak bisa dibatalkan.');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-xs font-semibold text-red-600 hover:text-red-700">Hapus</button>
+                                </form>
                             </td>
                         </tr>
                     @endforeach

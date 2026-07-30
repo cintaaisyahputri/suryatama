@@ -1,0 +1,6 @@
+$kind: http-request
+url: "{{base_url}}/tutorial/seen"
+method: POST
+headers:
+  X-XSRF-TOKEN: "{{csrf_token}}"
+order: 9000

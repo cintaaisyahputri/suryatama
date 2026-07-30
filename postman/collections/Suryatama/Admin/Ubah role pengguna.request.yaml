@@ -1,0 +1,11 @@
+$kind: http-request
+description: hati-hati, kalau value-nya 'admin' akun itu langsung dapat akses admin
+url: "{{base_url}}/admin/pengguna/{{user_id}}"
+method: PUT
+headers:
+  X-XSRF-TOKEN: "{{csrf_token}}"
+body:
+  type: urlencoded
+  content:
+    role: user
+order: 7000

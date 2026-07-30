@@ -1,0 +1,11 @@
+$kind: http-request
+description: ganti order_id di variables sesuai id pesanan
+url: "{{base_url}}/admin/permintaan/{{order_id}}"
+method: PUT
+headers:
+  X-XSRF-TOKEN: "{{csrf_token}}"
+body:
+  type: urlencoded
+  content:
+    status: survei_terjadwal
+order: 3000

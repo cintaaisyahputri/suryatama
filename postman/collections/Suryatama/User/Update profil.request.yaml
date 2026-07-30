@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{base_url}}/profil"
+method: PUT
+headers:
+  X-XSRF-TOKEN: "{{csrf_token}}"
+body:
+  type: urlencoded
+  content:
+    name: Testing Akun
+    email: test1@suryatama.id
+    phone: "081200000001"
+    city: Depok
+    address: Jl. Merdeka No. 10, Depok
+order: 7000

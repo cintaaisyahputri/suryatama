@@ -1,0 +1,11 @@
+$kind: http-request
+url: "{{base_url}}/admin/jadwal-teknisi/{{order_id}}"
+method: PUT
+headers:
+  X-XSRF-TOKEN: "{{csrf_token}}"
+body:
+  type: urlencoded
+  content:
+    scheduled_at: 2026-08-01 09:00:00
+    technician_name: Bagas
+order: 5000

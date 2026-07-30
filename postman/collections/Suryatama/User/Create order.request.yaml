@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{base_url}}/dashboard/orders"
+method: POST
+headers:
+  X-XSRF-TOKEN: "{{csrf_token}}"
+body:
+  type: urlencoded
+  content:
+    address: Jl. Merdeka No. 10, Depok
+    city: Depok
+    capacity: 3 kWp
+order: 2000

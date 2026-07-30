@@ -7,18 +7,12 @@ use Illuminate\Support\Facades\Log;
 
 class IpLocationService
 {
-    /**
-     * Deteksi kota/alamat/koordinat dari IP request saat ini.
-     * Return null kalau gagal (biar tidak mengganggu proses login).
-     */
     public function fromRequest(): ?array
     {
         $ip = request()->ip();
 
-        // IP lokal (127.0.0.1 / ::1) tidak bisa dideteksi lokasinya.
-        // Saat development, dipakaikan IP contoh supaya fitur tetap bisa dites.
         if (in_array($ip, ['127.0.0.1', '::1']) || app()->environment('local')) {
-            $ip = config('services.ip_location.fallback_ip', '36.73.34.1'); // contoh IP Indonesia
+            $ip = config('services.ip_location.fallback_ip', '36.73.34.1');
         }
 
         try {

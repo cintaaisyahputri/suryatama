@@ -29,7 +29,6 @@
 <body class="antialiased">
     <div class="min-h-screen grid lg:grid-cols-2">
 
-        {{-- Left: brand panel with sun-arc motif --}}
         <div class="hidden lg:flex flex-col justify-between bg-[var(--ink)] text-white px-14 py-12">
             <a href="{{ url('/') }}" class="flex items-center gap-2">
                 <svg width="26" height="26" viewBox="0 0 30 30" fill="none">
@@ -54,7 +53,6 @@
             <p class="font-mono text-xs text-white/40">© {{ date('Y') }} Suryatama</p>
         </div>
 
-        {{-- Right: form --}}
         <div class="flex items-center justify-center px-6 py-16">
             <div class="w-full max-w-sm">
                 @yield('content')

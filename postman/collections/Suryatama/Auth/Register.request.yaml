@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{base_url}}/register"
+method: POST
+headers:
+  X-XSRF-TOKEN: "{{csrf_token}}"
+body:
+  type: urlencoded
+  content:
+    name: Testing Akun
+    email: test1@suryatama.id
+    phone: "081200000001"
+    password: password123
+    password_confirmation: password123
+order: 1000

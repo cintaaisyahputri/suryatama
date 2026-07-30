@@ -32,7 +32,6 @@
 <body class="antialiased">
 <div class="min-h-screen flex">
 
-    {{-- SIDEBAR --}}
     <aside class="hidden lg:flex flex-col w-64 shrink-0 border-r border-line bg-white px-5 py-6">
         <a href="{{ url('/') }}" class="flex items-center gap-2 px-2 mb-8">
             <svg width="24" height="24" viewBox="0 0 30 30" fill="none">
@@ -58,7 +57,6 @@
     </aside>
 
     <div class="flex-1 min-w-0">
-        {{-- TOPBAR --}}
         <header class="h-16 border-b border-line bg-white/80 backdrop-blur flex items-center justify-between px-6">
             <h1 class="font-display font-600 text-lg">@yield('page-title', 'Dashboard')</h1>
             <div class="flex items-center gap-4">

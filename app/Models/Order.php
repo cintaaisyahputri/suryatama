@@ -10,8 +10,6 @@ class Order extends Model
 {
     use HasFactory;
 
-    // Nilai yang valid untuk kolom status:
-    // menunggu_survei, survei_terjadwal, pemasangan, aktif
     protected $fillable = [
         'user_id',
         'capacity',

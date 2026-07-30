@@ -14,10 +14,8 @@
         ->take(2)
         ->implode('')) ?: 'A';
 
-    // Ambil permintaan konsultasi terbaru dari tabel orders (diisi user lewat dashboard mereka).
-    // Dibungkus try/catch supaya tetap aman dipakai sebelum migration dijalankan.
     try {
-        $latestOrders = \App\Models\Order::with('user')->latest()->take(6)->get()->map(function ($o) {
+        $latestOrders = \App\Models\Order::with('user')->latest()->take(6)->get()->map(function (\App\Models\Order $o) {
             return [
                 'name' => $o->user->name ?? '—',
                 'loc' => $o->city ?? '—',
@@ -30,7 +28,6 @@
         $latestOrders = [];
     }
 
-    // Fallback data contoh selama tabel orders belum ada/masih kosong.
     if (empty($latestOrders)) {
         $latestOrders = [
             ['name' => 'Rahmat Hidayat', 'loc' => 'Bekasi', 'kwp' => '4 kWp', 'status' => 'Menunggu survei', 'tone' => 'amber'],
@@ -47,7 +44,6 @@
 
 @section('content')
 
-    {{-- Stat cards --}}
     <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
         @foreach([
             ['label' => 'Permintaan baru', 'value' => '18', 'note' => '+5 minggu ini'],
@@ -64,7 +60,6 @@
     </div>
 
     <div class="grid lg:grid-cols-3 gap-6">
-        {{-- Permintaan konsultasi terbaru --}}
         <div class="card rounded-2xl p-6 lg:col-span-2">
             <div class="flex items-center justify-between mb-4">
                 <p class="font-display font-600">Permintaan konsultasi terbaru</p>
@@ -97,7 +92,6 @@
             </table>
         </div>
 
-        {{-- Jadwal teknisi hari ini --}}
         <div class="card rounded-2xl p-6">
             <p class="font-display font-600 mb-4">Jadwal teknisi — hari ini</p>
             <div class="space-y-4">

@@ -7,24 +7,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Halaman utama
-|--------------------------------------------------------------------------
-*/
 Route::get('/', function () {
     return view('home');
 })->name('home');
 
-
-/*
-|--------------------------------------------------------------------------
-| Auth: login & register asli (pakai Auth facade bawaan Laravel)
-|--------------------------------------------------------------------------
-| Tidak perlu Laravel Breeze/Fortify untuk ini — cukup Auth facade & model
-| User bawaan Laravel (asalkan sudah pasang kolom & relasi dari
-| app/Models/User.php.patch dan migration di database/migrations).
-*/
 Route::middleware('guest')->group(function () {
     Route::get('/login', function () {
         return view('auth.login');
@@ -74,7 +60,6 @@ Route::middleware('guest')->group(function () {
         return redirect()->route('user.dashboard');
     });
 
-    // Dummy "lupa password" supaya link di halaman login tidak error
     Route::get('/forgot-password', function () {
         return 'Halaman lupa password (buat sendiri sesuai kebutuhan, atau pasang Laravel Breeze).';
     })->name('password.request');
@@ -88,19 +73,32 @@ Route::post('/logout', function (Request $request) {
     return redirect()->route('home');
 })->middleware('auth')->name('logout');
 
+Route::get('/cek-status', function () {
+    if (auth()->check()) {
+        $u = auth()->user();
 
-/*
-|--------------------------------------------------------------------------
-| Halaman user (butuh login)
-|--------------------------------------------------------------------------
-*/
+        return "SEDANG LOGIN sebagai: {$u->name} ({$u->email}), role: {$u->role}."
+            . " <a href='/logout-paksa'>Klik di sini untuk logout paksa</a>,"
+            . " lalu coba buka <a href='/login'>/login</a> lagi.";
+    }
+
+    return "TIDAK sedang login. Coba buka <a href='/login'>/login</a> — kalau di sini juga"
+        . " tidak bisa dibuka/balik ke halaman utama, berarti bukan soal sesi.";
+});
+
+Route::get('/logout-paksa', function () {
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+
+    return "Sesi sudah dipaksa keluar. <a href='/login'>Coba /login sekarang</a>.";
+});
+
 Route::middleware('auth')->group(function () {
 
     Route::get('/dashboard', function () {
         return view('user.dashboard');
     })->name('user.dashboard');
 
-    // Simpan permintaan survei pertama dari pelanggan baru
     Route::post('/dashboard/orders', function (Request $request) {
         auth()->user()->orders()->create([
             'capacity' => $request->input('capacity'),
@@ -111,29 +109,24 @@ Route::middleware('auth')->group(function () {
         return redirect()->route('user.dashboard')->with('status', 'Permintaan survei berhasil diajukan!');
     })->name('orders.store');
 
-    // Menandai tutorial sudah dilihat (dipanggil otomatis oleh komponen <x-tutorial>)
     Route::post('/tutorial/seen', function () {
         auth()->user()->update(['has_seen_tutorial' => true]);
 
         return response()->json(['ok' => true]);
     })->name('tutorial.seen');
 
-    // Jadwal survei
     Route::get('/jadwal-survei', function () {
         return view('user.schedule');
     })->name('user.schedule');
 
-    // Produksi listrik
     Route::get('/produksi-listrik', function () {
         return view('user.production');
     })->name('user.production');
 
-    // Invoice
     Route::get('/invoice', function () {
         return view('user.invoices');
     })->name('user.invoices');
 
-    // Profil
     Route::get('/profil', function () {
         return view('user.profile');
     })->name('user.profile');
@@ -169,14 +162,6 @@ Route::middleware('auth')->group(function () {
 
 });
 
-
-/*
-|--------------------------------------------------------------------------
-| Halaman admin (butuh login + role admin)
-|--------------------------------------------------------------------------
-| Belum pakai middleware `role` khusus supaya tidak perlu daftar middleware
-| tambahan dulu — cukup dicek langsung di dalam closure-nya (abort_unless).
-*/
 Route::middleware('auth')->prefix('admin')->group(function () {
 
     Route::get('/', function () {
@@ -185,7 +170,6 @@ Route::middleware('auth')->prefix('admin')->group(function () {
         return view('admin.dashboard');
     })->name('admin.dashboard');
 
-    // Permintaan konsultasi: daftar semua pesanan + ubah status
     Route::get('/permintaan', function () {
         abort_unless(auth()->user()->role === 'admin', 403);
 
@@ -204,7 +188,14 @@ Route::middleware('auth')->prefix('admin')->group(function () {
         return back()->with('status', 'Status pesanan berhasil diperbarui.');
     })->name('admin.requests.update');
 
-    // Jadwal teknisi: atur tanggal kunjungan & nama teknisi per pesanan
+    Route::delete('/permintaan/{order}', function (Order $order) {
+        abort_unless(auth()->user()->role === 'admin', 403);
+
+        $order->delete();
+
+        return back()->with('status', 'Pesanan berhasil dihapus.');
+    })->name('admin.requests.destroy');
+
     Route::get('/jadwal-teknisi', function () {
         abort_unless(auth()->user()->role === 'admin', 403);
 
@@ -224,7 +215,6 @@ Route::middleware('auth')->prefix('admin')->group(function () {
         return back()->with('status', 'Jadwal berhasil disimpan.');
     })->name('admin.schedule.update');
 
-    // Pengguna: daftar semua akun + ubah role
     Route::get('/pengguna', function () {
         abort_unless(auth()->user()->role === 'admin', 403);
 
@@ -241,7 +231,18 @@ Route::middleware('auth')->prefix('admin')->group(function () {
         return back()->with('status', 'Role pengguna berhasil diperbarui.');
     })->name('admin.users.update');
 
-    // Laporan & invoice
+    Route::delete('/pengguna/{user}', function (User $user) {
+        abort_unless(auth()->user()->role === 'admin', 403);
+
+        if ($user->id === auth()->id()) {
+            return back()->withErrors(['user' => 'Kamu tidak bisa menghapus akunmu sendiri.']);
+        }
+
+        $user->delete();
+
+        return back()->with('status', 'Pengguna berhasil dihapus.');
+    })->name('admin.users.destroy');
+
     Route::get('/laporan', function () {
         abort_unless(auth()->user()->role === 'admin', 403);
 

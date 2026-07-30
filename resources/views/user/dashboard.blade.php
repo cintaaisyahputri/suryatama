@@ -23,6 +23,20 @@
     }
     $isNewCustomer = ! $hasOrders;
 
+    // Pesanan terbaru (buat kartu status), plus progress step dihitung dari status asli
+    $latestOrder = $hasOrders ? $authUser->orders()->latest()->first() : null;
+
+    if ($latestOrder) {
+        $orderSteps = ['menunggu_survei', 'survei_terjadwal', 'pemasangan', 'aktif'];
+        $currentIndex = array_search($latestOrder->status, $orderSteps);
+        $progressSteps = [
+            ['label' => 'Konsultasi', 'done' => true],
+            ['label' => 'Survei atap', 'done' => $currentIndex >= 1, 'current' => $currentIndex === 1],
+            ['label' => 'Pemasangan', 'done' => $currentIndex >= 2, 'current' => $currentIndex === 2],
+            ['label' => 'Aktivasi', 'done' => $currentIndex >= 3, 'current' => $currentIndex === 3],
+        ];
+    }
+
     // Alamat otomatis dari deteksi IP saat login (diisi oleh SetUserLocationFromIp listener)
     $autoAddress = $authUser->address;
     $autoCity = $authUser->city;
@@ -73,31 +87,65 @@
             </form>
         </div>
     @else
-        {{-- Status pemasangan: pelanggan yang sudah punya pesanan berjalan --}}
+        {{-- Status pemasangan: data pesanan terbaru yang asli --}}
         <div data-tutorial="buat-permintaan" class="card rounded-2xl p-7 mb-6">
             <div class="flex items-center justify-between mb-6">
                 <div>
-                    <p class="text-xs uppercase tracking-wide text-soft">Status pesanan #SRY-2291</p>
-                    <h2 class="font-display text-xl font-700 mt-1">Sistem 3 kWp — Rumah, Depok</h2>
+                    <p class="text-xs uppercase tracking-wide text-soft">Pesanan #SRY-{{ 2000 + $latestOrder->id }}</p>
+                    <h2 class="font-display text-xl font-700 mt-1">{{ $latestOrder->capacity ?? '—' }} — {{ $latestOrder->city ?? 'Kota belum diisi' }}</h2>
                 </div>
-                <span class="text-xs font-semibold bg-teal-brand/10 text-teal-brand px-3 py-1.5 rounded-full">Sedang berjalan</span>
+                <span class="text-xs font-semibold bg-teal-brand/10 text-teal-brand px-3 py-1.5 rounded-full">{{ $latestOrder->statusLabel() }}</span>
             </div>
 
             <div class="grid grid-cols-4 gap-2">
-                @foreach([
-                    ['label' => 'Konsultasi', 'done' => true],
-                    ['label' => 'Survei atap', 'done' => true],
-                    ['label' => 'Pemasangan', 'done' => false, 'current' => true],
-                    ['label' => 'Aktivasi', 'done' => false],
-                ] as $s)
+                @foreach($progressSteps as $s)
                     <div>
                         <div class="h-1.5 rounded-full {{ $s['done'] ? 'bg-teal-brand' : ($s['current'] ?? false ? 'bg-amber-brand' : 'bg-[var(--line)]') }}"></div>
                         <p class="text-xs mt-2 font-medium {{ $s['done'] || ($s['current'] ?? false) ? 'text-[var(--ink)]' : 'text-soft' }}">{{ $s['label'] }}</p>
                     </div>
                 @endforeach
             </div>
-            <p class="text-sm text-soft mt-5">Teknisi dijadwalkan datang <span class="font-medium text-[var(--ink)]">Kamis, 24 Juli 2026 · 09.00</span> untuk pemasangan panel.</p>
+
+            @if($latestOrder->scheduled_at)
+                <p class="text-sm text-soft mt-5">Teknisi dijadwalkan datang <span class="font-medium text-[var(--ink)]">{{ $latestOrder->scheduled_at->translatedFormat('l, d F Y · H:i') }}</span>{{ $latestOrder->technician_name ? ' oleh '.$latestOrder->technician_name : '' }}.</p>
+            @else
+                <p class="text-sm text-soft mt-5">Jadwal kunjungan teknisi belum ditentukan admin.</p>
+            @endif
         </div>
+
+        {{-- Ajukan pemasangan lain: selalu tersedia, tidak cuma buat pelanggan baru --}}
+        <details class="card rounded-2xl mb-6 group">
+            <summary class="cursor-pointer list-none p-5 flex items-center justify-between font-display font-600">
+                <span>+ Ajukan pemasangan baru</span>
+                <span class="text-xs text-soft font-normal font-sans">Punya lokasi lain? Klik di sini</span>
+            </summary>
+            <div class="px-5 pb-6 pt-1 border-t border-line">
+                <form method="POST" action="{{ route('orders.store') }}" class="mt-4 grid sm:grid-cols-2 gap-4 text-left max-w-md">
+                    @csrf
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-medium mb-1.5">Alamat</label>
+                        <input type="text" name="address" placeholder="Contoh: Jl. Merdeka No. 10, Depok"
+                               class="w-full rounded-lg border border-line px-4 py-2.5 text-sm bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1.5">Kota</label>
+                        <input type="text" name="city" class="w-full rounded-lg border border-line px-4 py-2.5 text-sm bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1.5">Kapasitas perkiraan</label>
+                        <select name="capacity" class="w-full rounded-lg border border-line px-4 py-2.5 text-sm bg-white">
+                            <option>2 kWp</option>
+                            <option selected>3 kWp</option>
+                            <option>5 kWp</option>
+                            <option>10 kWp</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary sm:col-span-2 rounded-lg py-3 text-sm font-semibold transition-colors">
+                        Ajukan survei gratis
+                    </button>
+                </form>
+            </div>
+        </details>
     @endif
 
     <div class="grid lg:grid-cols-3 gap-6">

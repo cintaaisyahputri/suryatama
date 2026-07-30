@@ -4,7 +4,6 @@
 
 @section('content')
 
-    {{-- HERO --}}
     <section class="max-w-6xl mx-auto px-6 pt-16 pb-20 grid lg:grid-cols-2 gap-12 items-center">
         <div>
             <p class="font-mono text-xs tracking-widest uppercase text-amber-brand mb-4">Survei · Desain · Instalasi</p>
@@ -36,7 +35,6 @@
             </div>
         </div>
 
-        {{-- Signature element: sun-path arc showing production across the day --}}
         <div class="card rounded-3xl p-8">
             <p class="text-xs font-semibold uppercase tracking-wide text-soft mb-1">Simulasi produksi harian</p>
             <p class="font-display text-lg mb-6">Rumah 3 kWp · Jakarta Selatan</p>
@@ -67,7 +65,6 @@
         </div>
     </section>
 
-    {{-- LAYANAN --}}
     <section id="layanan" class="max-w-6xl mx-auto px-6 py-20 border-t border-line">
         <p class="font-mono text-xs tracking-widest uppercase text-amber-brand mb-3">Layanan</p>
         <h2 class="font-display text-3xl font-700 max-w-lg">Satu tim, dari perhitungan hingga sistem menyala.</h2>
@@ -97,7 +94,6 @@
         </div>
     </section>
 
-    {{-- PROSES: numbered sequence — genuinely sequential --}}
     <section id="proses" class="max-w-6xl mx-auto px-6 py-20 border-t border-line">
         <p class="font-mono text-xs tracking-widest uppercase text-amber-brand mb-3">Proses</p>
         <h2 class="font-display text-3xl font-700 max-w-lg">Empat tahap sampai listrik dari atap menyala.</h2>
@@ -118,7 +114,6 @@
         </div>
     </section>
 
-    {{-- TESTIMONI --}}
     <section id="testimoni" class="max-w-6xl mx-auto px-6 py-20 border-t border-line">
         <p class="font-mono text-xs tracking-widest uppercase text-amber-brand mb-3">Testimoni</p>
         <h2 class="font-display text-3xl font-700 max-w-lg mb-12">Dipercaya pemilik rumah dan usaha kecil.</h2>
@@ -138,7 +133,6 @@
         </div>
     </section>
 
-    {{-- CTA --}}
     <section class="max-w-6xl mx-auto px-6 pb-24">
         <div class="rounded-3xl bg-[var(--ink)] text-white px-10 py-14 flex flex-col md:flex-row items-center justify-between gap-8">
             <div>

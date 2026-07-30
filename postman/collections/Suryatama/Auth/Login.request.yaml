@@ -1,0 +1,11 @@
+$kind: http-request
+url: "{{base_url}}/login"
+method: POST
+headers:
+  X-XSRF-TOKEN: "{{csrf_token}}"
+body:
+  type: urlencoded
+  content:
+    email: test1@suryatama.id
+    password: password123
+order: 2000

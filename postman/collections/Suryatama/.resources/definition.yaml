@@ -1,0 +1,12 @@
+$kind: collection
+description: |-
+  routes buat project suryatama.
+
+  jalanin 'get session cookie' dulu sebelum request POST/PUT lain (biar csrf_token keisi otomatis). kalau abis logout atau kena 419, jalanin lagi.
+
+  base_url default 127.0.0.1:8000, ganti di variables kalau pakai xampp (biasanya localhost/suryatama/public).
+variables:
+  base_url: http://127.0.0.1:8000
+  csrf_token: ""
+  order_id: "1"
+  user_id: "1"

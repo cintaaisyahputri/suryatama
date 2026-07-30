@@ -1,18 +1,3 @@
-{{--
-    Komponen bubble tutorial (coachmark) untuk pelanggan baru.
-
-    Cara pakai di halaman lain:
-    <x-tutorial :steps="[
-        ['target' => '[data-tutorial=\"contoh\"]', 'title' => 'Judul', 'text' => 'Penjelasan singkat.'],
-    ]" storage-key="nama-unik-per-halaman" />
-
-    - `target` harus cocok dengan atribut data-tutorial="..." di elemen yang mau disorot.
-    - Kalau target tidak ketemu di halaman, bubble tetap tampil di tengah layar.
-    - Status "sudah dilihat" disimpan di localStorage (instan) DAN ke server lewat
-      route('tutorial.seen') (untuk kolom users.has_seen_tutorial), supaya tidak
-      muncul lagi walau localStorage dibersihkan.
---}}
-
 @props([
     'steps' => [],
     'storageKey' => 'suryatama_tutorial_seen',

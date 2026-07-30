@@ -1,12 +1,12 @@
 {
   "info": {
-    "name": "Suryatama - Jasa Pemasangan & Konsultasi Panel Surya",
-    "description": "Koleksi Postman untuk semua route Laravel di project Suryatama.\n\nCARA PAKAI:\n1. Set variable `base_url` di tab Variables collection ini (default: http://127.0.0.1:8000).\n2. Jalankan request '0. Ambil Cookie & CSRF Token' PALING PERTAMA -- ini wajib, tanpa ini semua request POST/PUT bakal kena 419 Page Expired karena Laravel butuh CSRF token yang valid.\n3. Baru jalankan folder '1. Autentikasi' -> Register atau Login.\n4. Setelah login, folder '2. Halaman User' dan '3. Halaman Admin' bisa langsung dipakai (cookie sesi otomatis kebawa karena satu domain yang sama).\n5. Kalau kena 419 lagi (biasanya setelah Logout), ulangi langkah 2.\n\nCATATAN: Karena ini aplikasi Blade (bukan REST API JSON), sebagian besar response berupa HTML, bukan JSON. Yang paling penting dicek biasanya status code-nya:\n- 200 = halaman berhasil dibuka\n- 302 = redirect (normal, misal abis login/register/submit form)\n- 403 = ditolak (biasanya karena bukan admin buka halaman admin)\n- 404 = route/id tidak ditemukan\n- 419 = CSRF token basi/tidak ada -> jalankan ulang request '0. Ambil Cookie & CSRF Token'\n- 500 = ada error di server, isi body response biasanya nampilin pesan errornya",
+    "name": "Suryatama",
+    "description": "routes buat project suryatama.\n\njalanin 'get session cookie' dulu sebelum request POST/PUT lain (biar csrf_token keisi otomatis). kalau abis logout atau kena 419, jalanin lagi.\n\nbase_url default 127.0.0.1:8000, ganti di variables kalau pakai xampp (biasanya localhost/suryatama/public).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "0. Ambil Cookie & CSRF Token (WAJIB DIJALANKAN PERTAMA)",
+      "name": "get session cookie",
       "request": {
         "method": "GET",
         "header": [],
@@ -19,7 +19,7 @@
             ""
           ]
         },
-        "description": "Jalankan request ini PALING PERTAMA (dan ulangi lagi kalau kena error 419 Page Expired, misalnya setelah logout). Request ini akan bikin Laravel ngasih cookie sesi + CSRF, terus Test script di bawah otomatis nyimpen token-nya ke variable collection `csrf_token` supaya dipakai otomatis sama semua request POST/PUT lainnya."
+        "description": "run this first (or after logout) to grab a fresh XSRF cookie, saved to csrf_token via the test script"
       },
       "event": [
         {
@@ -28,12 +28,7 @@
             "type": "text/javascript",
             "exec": [
               "const xsrf = pm.cookies.get('XSRF-TOKEN');",
-              "if (xsrf) {",
-              "    pm.collectionVariables.set('csrf_token', decodeURIComponent(xsrf));",
-              "    console.log('CSRF token tersimpan:', decodeURIComponent(xsrf));",
-              "} else {",
-              "    console.warn('Cookie XSRF-TOKEN tidak ditemukan. Pastikan base_url benar dan server jalan.');",
-              "}"
+              "if (xsrf) pm.collectionVariables.set('csrf_token', decodeURIComponent(xsrf));"
             ]
           }
         }
@@ -41,10 +36,10 @@
       "response": []
     },
     {
-      "name": "4. Halaman Publik",
+      "name": "Public",
       "item": [
         {
-          "name": "Halaman Utama",
+          "name": "Home",
           "request": {
             "method": "GET",
             "header": [],
@@ -54,13 +49,12 @@
                 "{{base_url}}"
               ],
               "path": []
-            },
-            "description": ""
+            }
           },
           "response": []
         },
         {
-          "name": "Halaman Login (form)",
+          "name": "Login page",
           "request": {
             "method": "GET",
             "header": [],
@@ -72,13 +66,12 @@
               "path": [
                 "login"
               ]
-            },
-            "description": ""
+            }
           },
           "response": []
         },
         {
-          "name": "Halaman Register (form)",
+          "name": "Register page",
           "request": {
             "method": "GET",
             "header": [],
@@ -90,18 +83,17 @@
               "path": [
                 "register"
               ]
-            },
-            "description": ""
+            }
           },
           "response": []
         }
       ]
     },
     {
-      "name": "1. Autentikasi",
+      "name": "Auth",
       "item": [
         {
-          "name": "Register (daftar akun baru)",
+          "name": "Register",
           "request": {
             "method": "POST",
             "header": [
@@ -120,13 +112,12 @@
                 "register"
               ]
             },
-            "description": "Daftar akun pelanggan baru. Otomatis login (Auth::login) kalau sukses -> redirect ke /dashboard (302).",
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
                 {
                   "key": "name",
-                  "value": "Testing Akun Baru",
+                  "value": "Testing Akun",
                   "type": "text"
                 },
                 {
@@ -174,7 +165,6 @@
                 "login"
               ]
             },
-            "description": "Login pakai email & password. Kalau role user -> redirect /dashboard, kalau admin -> redirect /admin.",
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
@@ -212,18 +202,17 @@
               "path": [
                 "logout"
               ]
-            },
-            "description": "Logout, menghapus sesi. Setelah ini jalankan lagi request '0. Ambil Cookie & CSRF Token' sebelum login/register lagi."
+            }
           },
           "response": []
         }
       ]
     },
     {
-      "name": "2. Halaman User (Pelanggan)",
+      "name": "User",
       "item": [
         {
-          "name": "Dashboard Saya",
+          "name": "Dashboard",
           "request": {
             "method": "GET",
             "header": [],
@@ -235,13 +224,12 @@
               "path": [
                 "dashboard"
               ]
-            },
-            "description": "Perlu sudah login sebagai user. Kalau belum login -> redirect ke /login (302)."
+            }
           },
           "response": []
         },
         {
-          "name": "Ajukan Survei Pertama (buat pesanan)",
+          "name": "Create order",
           "request": {
             "method": "POST",
             "header": [
@@ -261,7 +249,6 @@
                 "orders"
               ]
             },
-            "description": "Mengajukan permintaan survei gratis pertama (order baru untuk user yang lagi login).",
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
@@ -286,7 +273,7 @@
           "response": []
         },
         {
-          "name": "Jadwal Survei",
+          "name": "Jadwal survei",
           "request": {
             "method": "GET",
             "header": [],
@@ -298,13 +285,12 @@
               "path": [
                 "jadwal-survei"
               ]
-            },
-            "description": ""
+            }
           },
           "response": []
         },
         {
-          "name": "Produksi Listrik",
+          "name": "Produksi listrik",
           "request": {
             "method": "GET",
             "header": [],
@@ -316,8 +302,7 @@
               "path": [
                 "produksi-listrik"
               ]
-            },
-            "description": ""
+            }
           },
           "response": []
         },
@@ -334,13 +319,12 @@
               "path": [
                 "invoice"
               ]
-            },
-            "description": ""
+            }
           },
           "response": []
         },
         {
-          "name": "Profil (lihat)",
+          "name": "Profil",
           "request": {
             "method": "GET",
             "header": [],
@@ -352,13 +336,12 @@
               "path": [
                 "profil"
               ]
-            },
-            "description": ""
+            }
           },
           "response": []
         },
         {
-          "name": "Profil (update)",
+          "name": "Update profil",
           "request": {
             "method": "PUT",
             "header": [
@@ -377,13 +360,12 @@
                 "profil"
               ]
             },
-            "description": "Update nama/email/telepon/alamat/kota. Method PUT asli (bukan _method spoofing) karena dipanggil lewat Postman, bukan <form> HTML.",
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
                 {
                   "key": "name",
-                  "value": "Testing Akun Baru",
+                  "value": "Testing Akun",
                   "type": "text"
                 },
                 {
@@ -412,7 +394,7 @@
           "response": []
         },
         {
-          "name": "Ganti Kata Sandi",
+          "name": "Ganti password",
           "request": {
             "method": "PUT",
             "header": [
@@ -432,7 +414,6 @@
                 "password"
               ]
             },
-            "description": "Ganti password. current_password harus sesuai password akun yang lagi login.",
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
@@ -457,7 +438,7 @@
           "response": []
         },
         {
-          "name": "Tandai Tutorial Sudah Dilihat",
+          "name": "Tutorial seen",
           "request": {
             "method": "POST",
             "header": [
@@ -476,18 +457,17 @@
                 "tutorial",
                 "seen"
               ]
-            },
-            "description": "Dipanggil otomatis oleh komponen <x-tutorial> lewat fetch() JS. Bisa dites manual di sini juga."
+            }
           },
           "response": []
         }
       ]
     },
     {
-      "name": "3. Halaman Admin",
+      "name": "Admin",
       "item": [
         {
-          "name": "Dashboard Admin",
+          "name": "Dashboard admin",
           "request": {
             "method": "GET",
             "header": [],
@@ -499,13 +479,12 @@
               "path": [
                 "admin"
               ]
-            },
-            "description": "Perlu login sebagai user dengan role='admin'. Kalau role bukan admin -> 403 Forbidden."
+            }
           },
           "response": []
         },
         {
-          "name": "Permintaan Konsultasi (daftar)",
+          "name": "Permintaan konsultasi",
           "request": {
             "method": "GET",
             "header": [],
@@ -518,13 +497,12 @@
                 "admin",
                 "permintaan"
               ]
-            },
-            "description": ""
+            }
           },
           "response": []
         },
         {
-          "name": "Permintaan Konsultasi (ubah status)",
+          "name": "Update status pesanan",
           "request": {
             "method": "PUT",
             "header": [
@@ -545,7 +523,7 @@
                 "{{order_id}}"
               ]
             },
-            "description": "Ganti {{order_id}} di variable collection dengan id pesanan asli (cek tabel `orders` atau lihat urutan di halaman Permintaan Konsultasi).",
+            "description": "ganti order_id di variables sesuai id pesanan",
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
@@ -560,7 +538,7 @@
           "response": []
         },
         {
-          "name": "Jadwal Teknisi (daftar)",
+          "name": "Jadwal teknisi",
           "request": {
             "method": "GET",
             "header": [],
@@ -573,13 +551,12 @@
                 "admin",
                 "jadwal-teknisi"
               ]
-            },
-            "description": ""
+            }
           },
           "response": []
         },
         {
-          "name": "Jadwal Teknisi (atur jadwal)",
+          "name": "Atur jadwal teknisi",
           "request": {
             "method": "PUT",
             "header": [
@@ -600,7 +577,6 @@
                 "{{order_id}}"
               ]
             },
-            "description": "Isi tanggal kunjungan & nama teknisi untuk sebuah pesanan.",
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
@@ -620,7 +596,7 @@
           "response": []
         },
         {
-          "name": "Pengguna (daftar)",
+          "name": "Daftar pengguna",
           "request": {
             "method": "GET",
             "header": [],
@@ -633,13 +609,12 @@
                 "admin",
                 "pengguna"
               ]
-            },
-            "description": ""
+            }
           },
           "response": []
         },
         {
-          "name": "Pengguna (ubah role)",
+          "name": "Ubah role pengguna",
           "request": {
             "method": "PUT",
             "header": [
@@ -660,7 +635,7 @@
                 "{{user_id}}"
               ]
             },
-            "description": "Isi {{user_id}} dengan id user yang mau diubah role-nya. Hati-hati kalau isinya 'admin', akun itu langsung punya akses admin.",
+            "description": "hati-hati, kalau value-nya 'admin' akun itu langsung dapat akses admin",
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
@@ -675,7 +650,7 @@
           "response": []
         },
         {
-          "name": "Laporan & Invoice",
+          "name": "Laporan",
           "request": {
             "method": "GET",
             "header": [],
@@ -688,8 +663,7 @@
                 "admin",
                 "laporan"
               ]
-            },
-            "description": ""
+            }
           },
           "response": []
         }

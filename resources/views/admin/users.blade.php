@@ -33,6 +33,7 @@
                     <th class="p-4 font-medium">Kota</th>
                     <th class="p-4 font-medium">Jumlah pesanan</th>
                     <th class="p-4 font-medium">Role</th>
+                    <th class="p-4 font-medium"></th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-line">
@@ -54,6 +55,16 @@
                                         <option value="user" @selected($user->role === 'user')>User</option>
                                         <option value="admin" @selected($user->role === 'admin')>Admin</option>
                                     </select>
+                                </form>
+                            @endif
+                        </td>
+                        <td class="p-4 text-right">
+                            @if($user->id !== $authUser->id)
+                                <form method="POST" action="{{ route('admin.users.destroy', $user) }}"
+                                      onsubmit="return confirm('Hapus akun {{ $user->name }}? Semua pesanan miliknya juga ikut terhapus. Tindakan ini tidak bisa dibatalkan.');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-xs font-semibold text-red-600 hover:text-red-700">Hapus</button>
                                 </form>
                             @endif
                         </td>
