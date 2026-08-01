@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Invoice;
 use App\Models\Order;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -66,7 +67,7 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::post('/logout', function (Request $request) {
-    Auth::logout();
+    auth()->logout();
     $request->session()->invalidate();
     $request->session()->regenerateToken();
 
@@ -87,6 +88,7 @@ Route::get('/cek-status', function () {
 });
 
 Route::get('/logout-paksa', function () {
+    auth()->logout();
     request()->session()->invalidate();
     request()->session()->regenerateToken();
 
@@ -193,7 +195,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
 
         $order->delete();
 
-        return back()->with('status', 'Pesanan berhasil dihapus.');
+        return back(302)->with('status', 'Pesanan berhasil dihapus.');
     })->name('admin.requests.destroy');
 
     Route::get('/jadwal-teknisi', function () {
@@ -240,7 +242,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
 
         $user->delete();
 
-        return back()->with('status', 'Pengguna berhasil dihapus.');
+        return back(302)->with('status', 'Pengguna berhasil dihapus.');
     })->name('admin.users.destroy');
 
     Route::get('/laporan', function () {
@@ -248,5 +250,45 @@ Route::middleware('auth')->prefix('admin')->group(function () {
 
         return view('admin.reports');
     })->name('admin.reports');
+
+    Route::post('/laporan/invoices', function (Request $request) {
+        abort_unless(auth()->user()->role === 'admin', 403);
+
+        $data = $request->validate([
+            'order_id' => ['required', 'exists:orders,id'],
+            'label' => ['required', 'string', 'max:255'],
+            'amount' => ['required', 'numeric', 'min:0'],
+            'due_date' => ['nullable', 'date'],
+        ]);
+
+        $order = Order::findOrFail($data['order_id']);
+        $minimum = $order->minimumPrice();
+
+        if ($data['amount'] < $minimum) {
+            return back()->withInput()->withErrors([
+                'amount' => 'Jumlah invoice minimal '.$order->minimumPriceFormatted().' untuk kapasitas '.($order->capacity ?? 'pesanan ini').'.',
+            ]);
+        }
+
+        Invoice::create($data);
+
+        return back()->with('status', 'Invoice berhasil dibuat.');
+    })->name('admin.invoices.store');
+
+    Route::put('/laporan/invoices/{invoice}/lunas', function (Invoice $invoice) {
+        abort_unless(auth()->user()->role === 'admin', 403);
+
+        $invoice->update(['paid_at' => now()]);
+
+        return back()->with('status', 'Invoice ditandai lunas.');
+    })->name('admin.invoices.mark-paid');
+
+    Route::delete('/laporan/invoices/{invoice}', function (Invoice $invoice) {
+        abort_unless(auth()->user()->role === 'admin', 403);
+
+        $invoice->delete();
+
+        return back(302)->with('status', 'Invoice berhasil dihapus.');
+    })->name('admin.invoices.destroy');
 
 });

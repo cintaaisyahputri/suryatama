@@ -14,8 +14,6 @@
         ->take(2)
         ->implode('')) ?: 'U';
 
-    // Cek apakah pelanggan ini baru (belum pernah punya pesanan).
-    // Dibungkus try/catch supaya tetap aman dipakai sebelum migration orders dijalankan.
     try {
         $hasOrders = $authUser->orders()->exists();
     } catch (\Throwable $e) {
@@ -23,7 +21,6 @@
     }
     $isNewCustomer = ! $hasOrders;
 
-    // Pesanan terbaru (buat kartu status), plus progress step dihitung dari status asli
     $latestOrder = $hasOrders ? $authUser->orders()->latest()->first() : null;
 
     if ($latestOrder) {
@@ -37,9 +34,13 @@
         ];
     }
 
-    // Alamat otomatis dari deteksi IP saat login (diisi oleh SetUserLocationFromIp listener)
     $autoAddress = $authUser->address;
     $autoCity = $authUser->city;
+
+    $latestInvoices = \App\Models\Invoice::whereHas('order', fn ($q) => $q->where('user_id', $authUser->id))
+        ->latest()
+        ->take(2)
+        ->get();
 @endphp
 
 @section('sidebar')
@@ -49,7 +50,6 @@
 @section('content')
 
     @if($isNewCustomer)
-        {{-- Empty state: pelanggan baru, belum ada pesanan --}}
         <div data-tutorial="buat-permintaan" class="card rounded-2xl p-8 mb-6 text-center">
             <div class="w-12 h-12 mx-auto rounded-full bg-amber-brand/15 flex items-center justify-center mb-4">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--amber-deep)" stroke-width="2"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>
@@ -87,7 +87,6 @@
             </form>
         </div>
     @else
-        {{-- Status pemasangan: data pesanan terbaru yang asli --}}
         <div data-tutorial="buat-permintaan" class="card rounded-2xl p-7 mb-6">
             <div class="flex items-center justify-between mb-6">
                 <div>
@@ -113,7 +112,6 @@
             @endif
         </div>
 
-        {{-- Ajukan pemasangan lain: selalu tersedia, tidak cuma buat pelanggan baru --}}
         <details class="card rounded-2xl mb-6 group">
             <summary class="cursor-pointer list-none p-5 flex items-center justify-between font-display font-600">
                 <span>+ Ajukan pemasangan baru</span>
@@ -149,7 +147,6 @@
     @endif
 
     <div class="grid lg:grid-cols-3 gap-6">
-        {{-- Produksi listrik --}}
         <div data-tutorial="produksi" class="card rounded-2xl p-7 lg:col-span-2">
             <p class="text-xs uppercase tracking-wide text-soft mb-1">Produksi listrik hari ini</p>
             <p class="font-display text-2xl font-700 mb-6">— (aktif setelah aktivasi)</p>
@@ -159,26 +156,33 @@
             <p class="text-xs text-soft mt-3">Grafik akan menampilkan data real-time begitu sistem selesai diaktivasi.</p>
         </div>
 
-        {{-- Invoice --}}
         <div data-tutorial="invoice" class="card rounded-2xl p-7">
             <p class="text-xs uppercase tracking-wide text-soft mb-4">Invoice terbaru</p>
-            <div class="space-y-4 font-mono text-sm">
-                <div class="flex justify-between items-center pb-4 border-b border-line">
-                    <div>
-                        <p class="text-[var(--ink)]">DP Pemasangan</p>
-                        <p class="text-soft text-xs">10 Jul 2026</p>
-                    </div>
-                    <span class="text-teal-brand text-xs font-semibold">Lunas</span>
+
+            @if($latestInvoices->isEmpty())
+                <p class="text-sm text-soft">Belum ada invoice untuk pesanan kamu.</p>
+            @else
+                <div class="space-y-4 font-mono text-sm">
+                    @foreach($latestInvoices as $invoice)
+                        <div class="flex justify-between items-center pb-4 border-b border-line last:border-0 last:pb-0">
+                            <div>
+                                <p class="text-[var(--ink)]">{{ $invoice->label }}</p>
+                                <p class="text-soft text-xs">
+                                    {{ $invoice->isPaid() ? optional($invoice->paid_at)->translatedFormat('d M Y') : 'Jatuh tempo '.optional($invoice->due_date)->translatedFormat('d M Y') }}
+                                </p>
+                            </div>
+                            <span class="text-xs font-semibold
+                                {{ $invoice->statusTone() === 'teal' ? 'text-teal-brand' : ($invoice->statusTone() === 'red' ? 'text-red-600' : 'text-amber-brand') }}">
+                                {{ $invoice->statusLabel() }}
+                            </span>
+                        </div>
+                    @endforeach
                 </div>
-                <div class="flex justify-between items-center">
-                    <div>
-                        <p class="text-[var(--ink)]">Pelunasan</p>
-                        <p class="text-soft text-xs">Jatuh tempo 28 Jul 2026</p>
-                    </div>
-                    <span class="text-amber-brand text-xs font-semibold">Menunggu</span>
-                </div>
-            </div>
-            <button class="w-full mt-6 border border-line rounded-lg py-2.5 text-sm font-semibold hover:bg-black/[.02]">Lihat semua invoice</button>
+            @endif
+
+            <a href="{{ route('user.invoices') }}" class="block w-full mt-6 text-center border border-line rounded-lg py-2.5 text-sm font-semibold hover:bg-black/[.02]">
+                Lihat semua invoice
+            </a>
         </div>
     </div>
 
