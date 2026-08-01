@@ -193,6 +193,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::delete('/permintaan/{order}', function (Order $order) {
         abort_unless(auth()->user()->role === 'admin', 403);
 
+        /** @var Order $order */
         $order->delete();
 
         return back(302)->with('status', 'Pesanan berhasil dihapus.');
@@ -240,6 +241,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
             return back()->withErrors(['user' => 'Kamu tidak bisa menghapus akunmu sendiri.']);
         }
 
+        /** @var User $user */
         $user->delete();
 
         return back(302)->with('status', 'Pengguna berhasil dihapus.');
@@ -286,6 +288,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::delete('/laporan/invoices/{invoice}', function (Invoice $invoice) {
         abort_unless(auth()->user()->role === 'admin', 403);
 
+        /** @var Invoice $invoice */
         $invoice->delete();
 
         return back(302)->with('status', 'Invoice berhasil dihapus.');

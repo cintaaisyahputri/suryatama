@@ -41,6 +41,7 @@
         ->latest()
         ->take(2)
         ->get();
+    /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Invoice> $latestInvoices */
 @endphp
 
 @section('sidebar')

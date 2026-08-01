@@ -33,8 +33,10 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Invoice whereOrderId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Invoice wherePaidAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Invoice whereUpdatedAt($value)
+ * @mixin \Eloquent
  */
-	class Invoice extends \Eloquent {}
+	#[\AllowDynamicProperties]
+	class IdeHelperInvoice {}
 }
 
 namespace App\Models{
@@ -45,10 +47,12 @@ namespace App\Models{
  * @property string|null $city
  * @property string|null $address
  * @property string $status
- * @property string|null $scheduled_at
+ * @property \Illuminate\Support\Carbon|null $scheduled_at
  * @property string|null $technician_name
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Invoice> $invoices
+ * @property-read int|null $invoices_count
  * @property-read \App\Models\User $user
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order newQuery()
@@ -63,8 +67,10 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereTechnicianName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereUserId($value)
+ * @mixin \Eloquent
  */
-	class Order extends \Eloquent {}
+	#[\AllowDynamicProperties]
+	class IdeHelperOrder {}
 }
 
 namespace App\Models{
@@ -107,7 +113,9 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereRememberToken($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereRole($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereUpdatedAt($value)
+ * @mixin \Eloquent
  */
-	class User extends \Eloquent {}
+	#[\AllowDynamicProperties]
+	class IdeHelperUser {}
 }
 

@@ -15,6 +15,7 @@
         ->implode('')) ?: 'A';
 
     $latestOrders = \App\Models\Order::with('user')->latest()->take(6)->get();
+    /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Order> $latestOrders */
 
     $countMenungguSurvei = \App\Models\Order::where('status', 'menunggu_survei')->count();
     $countBaruMingguIni = \App\Models\Order::where('created_at', '>=', now()->subWeek())->count();
@@ -39,6 +40,7 @@
         ->whereDate('scheduled_at', now()->toDateString())
         ->orderBy('scheduled_at')
         ->get();
+    /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Order> $jadwalHariIni */
 @endphp
 
 @section('sidebar')

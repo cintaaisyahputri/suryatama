@@ -1,95 +1,85 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('title', 'Dashboard — Suryatama')</title>
 
-@php
-    $notifUser = auth()->user();
-    $notifItems = collect();
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 
-    if ($notifUser) {
-        if ($notifUser->role === 'admin') {
-            $notifItems = \App\Models\Order::with('user')
-                ->where('status', 'menunggu_survei')
-                ->latest()
-                ->take(8)
-                ->get()
-                ->map(fn (\App\Models\Order $o) => [
-                    'message' => 'Permintaan baru dari '.($o->user->name ?? 'pelanggan').' — '.($o->capacity ?? 'kapasitas belum diisi'),
-                    'time' => $o->created_at,
-                    'url' => route('admin.requests'),
-                ]);
-        } else {
-            $orderItems = $notifUser->orders()->latest()->take(5)->get()
-                ->map(fn (\App\Models\Order $o) => [
-                    'message' => 'Pesanan #SRY-'.(2000 + $o->id).' sekarang: '.$o->statusLabel(),
-                    'time' => $o->updated_at,
-                    'url' => route('user.schedule'),
-                ]);
-
-            $invoiceItems = \App\Models\Invoice::whereHas('order', fn ($q) => $q->where('user_id', $notifUser->id))
-                ->whereNull('paid_at')
-                ->latest('due_date')
-                ->take(5)
-                ->get()
-                ->map(fn (\App\Models\Invoice $i) => [
-                    'message' => 'Invoice '.$i->label.' jatuh tempo '.optional($i->due_date)->translatedFormat('d M Y'),
-                    'time' => $i->due_date,
-                    'url' => route('user.invoices'),
-                ]);
-
-            $notifItems = $orderItems->concat($invoiceItems);
+    <style>
+        :root{
+            --bg: #F5F6F1; --ink: #16202B; --ink-soft: #4B5A67;
+            --amber: #F0A202; --amber-deep: #C97F00; --teal: #0B6E4F; --line: #DCD9CE; --card: #FFFFFF;
         }
+        body{ background: var(--bg); color: var(--ink); font-family: 'Inter', sans-serif; }
+        .font-display{ font-family: 'Space Grotesk', sans-serif; }
+        .font-mono{ font-family: 'IBM Plex Mono', monospace; }
+        .text-soft{ color: var(--ink-soft); }
+        .text-amber-brand{ color: var(--amber-deep); }
+        .text-teal-brand{ color: var(--teal); }
+        .bg-teal-brand{ background: var(--teal); }
+        .border-line{ border-color: var(--line); }
+        .card{ background: var(--card); border: 1px solid var(--line); }
+        .nav-link{ color: var(--ink-soft); }
+        .nav-link:hover{ background: rgba(0,0,0,.03); color: var(--ink); }
+        .nav-link.active{ background: var(--ink); color: #fff; }
+    </style>
+</head>
+<body class="antialiased">
+<div class="min-h-screen flex">
 
-        $notifItems = $notifItems->filter(fn ($i) => $i['time'])->sortByDesc('time')->take(8)->values();
-    }
+    <aside class="hidden lg:flex flex-col w-64 shrink-0 border-r border-line bg-white px-5 py-6">
+        <a href="{{ url('/') }}" class="flex items-center gap-2 px-2 mb-8">
+            <svg width="24" height="24" viewBox="0 0 30 30" fill="none">
+                <path d="M15 2 L15 8" stroke="#F0A202" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M15 22 L15 28" stroke="#F0A202" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M4 15 L2 15" stroke="#F0A202" stroke-width="2.5" stroke-linecap="round"/>
+                <circle cx="15" cy="15" r="6.5" fill="#F0A202"/>
+            </svg>
+            <span class="font-display font-700">Suryatama</span>
+        </a>
 
-    $notifCount = $notifItems->count();
-    $notifId = 'notif-'.uniqid();
-@endphp
+        <nav class="flex-1 space-y-1">
+            @yield('sidebar')
+        </nav>
 
-<div class="relative">
-    <button type="button" class="notif-toggle relative text-soft" aria-label="Notifikasi" data-panel="{{ $notifId }}">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0"/></svg>
-        @if($notifCount > 0)
-            <span class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-brand"></span>
-        @endif
-    </button>
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium mt-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+                Keluar
+            </button>
+        </form>
+    </aside>
 
-    <div id="{{ $notifId }}" class="notif-panel hidden absolute right-0 mt-3 w-80 bg-white border border-line rounded-2xl shadow-xl z-50 overflow-hidden">
-        <div class="px-4 py-3 border-b border-line flex items-center justify-between">
-            <p class="text-sm font-semibold">Notifikasi</p>
-            @if($notifCount > 0)
-                <span class="text-xs text-soft">{{ $notifCount }} baru</span>
-            @endif
-        </div>
-        <div class="max-h-80 overflow-y-auto divide-y divide-line">
-            @forelse($notifItems as $item)
-                <a href="{{ $item['url'] }}" class="block px-4 py-3 text-sm hover:bg-black/[.02] transition-colors">
-                    <p class="text-[var(--ink)] leading-snug">{{ $item['message'] }}</p>
-                    <p class="text-xs text-soft mt-1">{{ optional($item['time'])->diffForHumans() ?? '—' }}</p>
-                </a>
-            @empty
-                <p class="px-4 py-8 text-sm text-soft text-center">Tidak ada notifikasi baru.</p>
-            @endforelse
-        </div>
+    <div class="flex-1 min-w-0">
+        
+        <header class="h-16 border-b border-line bg-white/80 backdrop-blur flex items-center justify-between px-6">
+            <h1 class="font-display font-600 text-lg">@yield('page-title', 'Dashboard')</h1>
+            <div class="flex items-center gap-4">
+                <x-notifications />
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-full bg-[var(--ink)] text-white flex items-center justify-center text-xs font-semibold">
+                        {{ $initials ?? 'SU' }}
+                    </div>
+                    <div class="hidden sm:block leading-tight">
+                        <p class="text-sm font-medium">{{ $userName ?? 'Pengguna' }}</p>
+                        <p class="text-xs text-soft">{{ $userEmail ?? ($userRole ?? '') }}</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="p-6">
+            @yield('content')
+        </main>
     </div>
 </div>
 
-@once
-    @push('scripts')
-    <script>
-        document.addEventListener('click', function (e) {
-            const toggle = e.target.closest('.notif-toggle');
-
-            if (toggle) {
-                const panel = document.getElementById(toggle.dataset.panel);
-                const isHidden = panel.classList.contains('hidden');
-                document.querySelectorAll('.notif-panel').forEach(function (p) { p.classList.add('hidden'); });
-                if (isHidden) panel.classList.remove('hidden');
-                return;
-            }
-
-            if (!e.target.closest('.notif-panel')) {
-                document.querySelectorAll('.notif-panel').forEach(function (p) { p.classList.add('hidden'); });
-            }
-        });
-    </script>
-    @endpush
-@endonce
+@stack('scripts')
+</body>
+</html>
